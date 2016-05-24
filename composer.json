@@ -1,0 +1,24 @@
+{
+    "name": "cawaphp/module-image",
+    "description": "Сáша module-image",
+    "keywords": ["cawa", "image", "resize"],
+    "minimum-stability": "dev",
+    "prefer-stable" : true,
+    "license": "GPL-3.0",
+    "authors": [
+        {
+            "name": "tchiotludo"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Cawa\\ImageModule\\": "src"
+        }
+    },
+    "require": {
+        "php": "~7.0",
+        "cawaphp/cawa" : "dev-master",
+
+        "intervention/image": "^2.3"
+    }
+}
