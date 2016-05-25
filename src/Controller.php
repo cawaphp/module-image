@@ -23,7 +23,6 @@ class Controller extends AbstractController
     use HttpFactory;
 
     /**
-     *
      * @param string $file
      * @param string $extension
      * @param int $width
@@ -33,13 +32,13 @@ class Controller extends AbstractController
      */
     public function resize(string $file, string $extension, int $width = null, int $height = null) : string
     {
-        $options = class_exists("Imagick") ? ['driver' => 'imagick'] : [];
+        $options = class_exists('Imagick') ? ['driver' => 'imagick'] : [];
         $manager = new ImageManager($options);
 
-        $path = $_SERVER['DOCUMENT_ROOT'] . $file . "." . $extension;
+        $path = $_SERVER['DOCUMENT_ROOT'] . $file . '.' . $extension;
         if (!file_exists($path)) {
             $this->response()->setStatus(404);
-            $img = $manager->make(dirname(__DIR__) . "/assets/40<4.png");
+            $img = $manager->make(dirname(__DIR__) . '/assets/40<4.png');
         } else {
             $img = $manager->make($path);
         }
@@ -52,13 +51,13 @@ class Controller extends AbstractController
             $width = round($height * $img->width() / $img->height());
         }
 
-        $interlace = DI::config()->getIfExists("image/interlace");
+        $interlace = DI::config()->getIfExists('image/interlace');
         $interlace = is_null($interlace) ? true : $interlace;
 
-        $sharpen = DI::config()->getIfExists("image/sharpen");
+        $sharpen = DI::config()->getIfExists('image/sharpen');
         $sharpen = is_null($sharpen) ? 5 : $sharpen;
 
-        $quality = DI::config()->getIfExists("image/quality");
+        $quality = DI::config()->getIfExists('image/quality');
 
         $encoded = $img->fit($width, $height);
 
@@ -73,7 +72,7 @@ class Controller extends AbstractController
         $encoded = $encoded->encode($extension, $quality);
 
         $this->response()->addHeader('Content-Type', $encoded->mime());
-        $this->response()->addHeader('Content-Length', (string)$encoded->filesize());
+        $this->response()->addHeader('Content-Length', (string) $encoded->filesize());
 
         return $encoded->getEncoded();
     }
