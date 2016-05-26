@@ -72,7 +72,7 @@ class Controller extends AbstractController
         $encoded = $encoded->encode($extension, $quality);
 
         $this->response()->addHeader('Content-Type', $encoded->mime());
-        $this->response()->addHeader('Content-Length', (string) $encoded->filesize());
+        $this->response()->addHeader('Content-Length', (string) strlen($encoded->getEncoded()));
 
         return $encoded->getEncoded();
     }
