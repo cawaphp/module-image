@@ -13,6 +13,7 @@ declare (strict_types=1);
 
 namespace Cawa\ImageModule;
 
+use Cawa\App\AbstractApp;
 use Cawa\App\HttpFactory;
 use Cawa\Controller\AbstractController;
 use Cawa\Core\DI;
@@ -27,10 +28,17 @@ class Controller extends AbstractController
      * @param string $extension
      * @param int $width
      * @param int $height
+     * @param string $effect
      *
      * @return string
      */
-    public function resize(string $file, string $extension, int $width = null, int $height = null) : string
+    public function resize(
+        string $file,
+        string $extension,
+        int $width = null,
+        int $height = null,
+        string $effect = null
+    ) : string
     {
         $options = class_exists('Imagick') ? ['driver' => 'imagick'] : [];
         $manager = new ImageManager($options);
@@ -67,6 +75,16 @@ class Controller extends AbstractController
 
         if ($sharpen) {
             $encoded->sharpen($sharpen);
+        }
+
+        if ($effect) {
+            /* @var \Cawa\ImageModule\Module $module */
+            $module = AbstractApp::instance()->getModule('Cawa\\ImageModule\\Module');
+
+            foreach(explode('-', $effect) as $currentEffect) {
+                $callable = $module->getEffect($currentEffect);
+                $encoded = $callable($encoded);
+            }
         }
 
         $encoded = $encoded->encode($extension, $quality);
