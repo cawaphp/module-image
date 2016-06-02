@@ -38,8 +38,7 @@ class Controller extends AbstractController
         int $width = null,
         int $height = null,
         string $effect = null
-    ) : string
-    {
+    ) : string {
         $options = class_exists('Imagick') ? ['driver' => 'imagick'] : [];
         $manager = new ImageManager($options);
 
@@ -81,7 +80,7 @@ class Controller extends AbstractController
             /* @var \Cawa\ImageModule\Module $module */
             $module = AbstractApp::instance()->getModule('Cawa\\ImageModule\\Module');
 
-            foreach(explode('-', $effect) as $currentEffect) {
+            foreach (explode('-', $effect) as $currentEffect) {
                 $callable = $module->getEffect($currentEffect);
                 $encoded = $callable($encoded);
             }
