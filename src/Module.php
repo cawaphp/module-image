@@ -59,7 +59,7 @@ class Module extends \Cawa\App\Module
         }
 
         self::router()->addRoutes([
-            Route::create()
+            (new Route())
                 ->setName('imageResize')
                 ->setMatch('{{C:<file>.*}}\.' .
                     '{{O:w<width>[0-9]+}}' .
