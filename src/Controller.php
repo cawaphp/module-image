@@ -17,11 +17,14 @@ use Cawa\App\AbstractApp;
 use Cawa\App\HttpFactory;
 use Cawa\Controller\AbstractController;
 use Cawa\Core\DI;
+use Cawa\Events\DispatcherFactory;
+use Cawa\Events\TimerEvent;
 use Intervention\Image\ImageManager;
 
 class Controller extends AbstractController
 {
     use HttpFactory;
+    use DispatcherFactory;
 
     /**
      * @param string $file
@@ -43,12 +46,22 @@ class Controller extends AbstractController
         $manager = new ImageManager($options);
 
         $path = $_SERVER['DOCUMENT_ROOT'] . $file . '.' . $extension;
+        $timerEvent = new TimerEvent('image.make', ['path' => $path]);
+
         if (!file_exists($path)) {
             $this->response()->setStatus(404);
             $img = $manager->make(dirname(__DIR__) . '/assets/40<4.png');
         } else {
             $img = $manager->make($path);
         }
+
+        $timerEvent->addData([
+            'width' => $img->width(),
+            'heigth' => $img->height(),
+            'size' => $img->filesize(),
+        ]);
+
+        $this->dispatcher()->emit($timerEvent);
 
         if (!$height) {
             $height = round($width * $img->height() / $img->width());
@@ -58,6 +71,8 @@ class Controller extends AbstractController
             $width = round($height * $img->width() / $img->height());
         }
 
+        $timerEvent = new TimerEvent('image.resize');
+
         $interlace = DI::config()->getIfExists('image/interlace');
         $interlace = is_null($interlace) ? true : $interlace;
 
@@ -66,14 +81,26 @@ class Controller extends AbstractController
 
         $quality = DI::config()->getIfExists('image/quality');
 
+        $timerEvent->addData([
+            'width' => $width,
+            'heigth' => $height,
+        ]);
+
         $encoded = $img->fit($width, $height);
 
+
+        $this->dispatcher()->emit($timerEvent);
+
         if ($interlace) {
+            $timerEvent = new TimerEvent('image.effect', ['type' => 'interlace']);
             $encoded->interlace();
+            $this->dispatcher()->emit($timerEvent);
         }
 
         if ($sharpen) {
+            $timerEvent = new TimerEvent('image.effect', ['type' => 'sharpen']);
             $encoded->sharpen($sharpen);
+            $this->dispatcher()->emit($timerEvent);
         }
 
         if ($effect) {
@@ -81,10 +108,13 @@ class Controller extends AbstractController
             $module = AbstractApp::instance()->getModule('Cawa\\ImageModule\\Module');
 
             foreach (explode('-', $effect) as $currentEffect) {
+                $timerEvent = new TimerEvent('image.effect', ['type' => $currentEffect]);
                 $callable = $module->getEffect($currentEffect);
                 $encoded = $callable($encoded);
+                $this->dispatcher()->emit($timerEvent);
             }
         }
+
 
         $encoded = $encoded->encode($extension, $quality);
 
