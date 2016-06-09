@@ -50,7 +50,7 @@ class Controller extends AbstractController
 
         if (!file_exists($path)) {
             $this->response()->setStatus(404);
-            $img = $manager->make(dirname(__DIR__) . '/assets/40<4.png');
+            $img = $manager->make(dirname(__DIR__) . '/assets/404.png');
         } else {
             $img = $manager->make($path);
         }
@@ -88,7 +88,6 @@ class Controller extends AbstractController
 
         $encoded = $img->fit($width, $height);
 
-
         $this->dispatcher()->emit($timerEvent);
 
         if ($interlace) {
@@ -114,7 +113,6 @@ class Controller extends AbstractController
                 $this->dispatcher()->emit($timerEvent);
             }
         }
-
 
         $encoded = $encoded->encode($extension, $quality);
 
