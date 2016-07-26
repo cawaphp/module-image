@@ -49,7 +49,7 @@ class Controller extends AbstractController
         $timerEvent = new TimerEvent('image.make', ['path' => $path]);
 
         if (!file_exists($path)) {
-            $this->response()->setStatus(404);
+            self::response()->setStatus(404);
             $img = $manager->make(dirname(__DIR__) . '/assets/404.png');
         } else {
             $img = $manager->make($path);
@@ -61,7 +61,7 @@ class Controller extends AbstractController
             'size' => $img->filesize(),
         ]);
 
-        $this->dispatcher()->emit($timerEvent);
+        self::dispatcher()->emit($timerEvent);
 
         if (!$height) {
             $height = round($width * $img->height() / $img->width());
@@ -88,18 +88,18 @@ class Controller extends AbstractController
 
         $encoded = $img->fit($width, $height);
 
-        $this->dispatcher()->emit($timerEvent);
+        self::dispatcher()->emit($timerEvent);
 
         if ($interlace) {
             $timerEvent = new TimerEvent('image.effect', ['type' => 'interlace']);
             $encoded->interlace();
-            $this->dispatcher()->emit($timerEvent);
+            self::dispatcher()->emit($timerEvent);
         }
 
         if ($sharpen) {
             $timerEvent = new TimerEvent('image.effect', ['type' => 'sharpen']);
             $encoded->sharpen($sharpen);
-            $this->dispatcher()->emit($timerEvent);
+            self::dispatcher()->emit($timerEvent);
         }
 
         if ($effect) {
@@ -110,14 +110,14 @@ class Controller extends AbstractController
                 $timerEvent = new TimerEvent('image.effect', ['type' => $currentEffect]);
                 $callable = $module->getEffect($currentEffect);
                 $encoded = $callable($encoded);
-                $this->dispatcher()->emit($timerEvent);
+                self::dispatcher()->emit($timerEvent);
             }
         }
 
         $encoded = $encoded->encode($extension, $quality);
 
-        $this->response()->addHeader('Content-Type', $encoded->mime());
-        $this->response()->addHeader('Content-Length', (string) strlen($encoded->getEncoded()));
+        self::response()->addHeader('Content-Type', $encoded->mime());
+        self::response()->addHeader('Content-Length', (string) strlen($encoded->getEncoded()));
 
         return $encoded->getEncoded();
     }
