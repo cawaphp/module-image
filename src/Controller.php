@@ -61,7 +61,7 @@ class Controller extends AbstractController
             'size' => $img->filesize(),
         ]);
 
-        self::dispatcher()->emit($timerEvent);
+        self::emit($timerEvent);
 
         if (!$height) {
             $height = round($width * $img->height() / $img->width());
@@ -88,18 +88,18 @@ class Controller extends AbstractController
 
         $encoded = $img->fit($width, $height);
 
-        self::dispatcher()->emit($timerEvent);
+        self::emit($timerEvent);
 
         if ($interlace) {
             $timerEvent = new TimerEvent('image.effect', ['type' => 'interlace']);
             $encoded->interlace();
-            self::dispatcher()->emit($timerEvent);
+            self::emit($timerEvent);
         }
 
         if ($sharpen) {
             $timerEvent = new TimerEvent('image.effect', ['type' => 'sharpen']);
             $encoded->sharpen($sharpen);
-            self::dispatcher()->emit($timerEvent);
+            self::emit($timerEvent);
         }
 
         if ($effect) {
@@ -110,7 +110,7 @@ class Controller extends AbstractController
                 $timerEvent = new TimerEvent('image.effect', ['type' => $currentEffect]);
                 $callable = $module->getEffect($currentEffect);
                 $encoded = $callable($encoded);
-                self::dispatcher()->emit($timerEvent);
+                self::emit($timerEvent);
             }
         }
 
