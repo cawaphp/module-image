@@ -65,7 +65,8 @@ class Module extends \Cawa\App\Module
                     '{{O:w<width>[0-9]+}}' .
                     '{{O:h<height>[0-9]+}}' .
                     $effect .
-                    '\.{{C:<extension>(jpg|jpeg|png|gif|tif|tiff|ico|bmp)}}')
+                    '{{O:\.<extensionFrom>(jpg|jpeg|png|gif|tif|tiff|ico|bmp|svg)}}' .
+                    '\.{{C:<extension>(jpg|jpeg|png|gif|tif|tiff|ico|bmp|svg)}}')
                 ->setController('Cawa\\ImageModule\\Controller::resize'),
         ]);
 

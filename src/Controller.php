@@ -29,6 +29,7 @@ class Controller extends AbstractController
     /**
      * @param string $file
      * @param string $extension
+     * @param string $extensionFrom
      * @param int $width
      * @param int $height
      * @param string $effect
@@ -38,6 +39,7 @@ class Controller extends AbstractController
     public function resize(
         string $file,
         string $extension,
+        string $extensionFrom = null,
         int $width = null,
         int $height = null,
         string $effect = null
@@ -45,7 +47,7 @@ class Controller extends AbstractController
         $options = class_exists('Imagick') ? ['driver' => 'imagick'] : [];
         $manager = new ImageManager($options);
 
-        $path = $_SERVER['DOCUMENT_ROOT'] . $file . '.' . $extension;
+        $path = $_SERVER['DOCUMENT_ROOT'] . $file . '.' . ($extensionFrom ? $extensionFrom: $extension);
         $timerEvent = new TimerEvent('image.make', ['path' => $path]);
 
         if (!file_exists($path)) {
