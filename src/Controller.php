@@ -32,6 +32,7 @@ class Controller extends AbstractController
      * @param string $extensionFrom
      * @param int $width
      * @param int $height
+     * @param string $position
      * @param string $effect
      *
      * @return string
@@ -42,6 +43,7 @@ class Controller extends AbstractController
         string $extensionFrom = null,
         int $width = null,
         int $height = null,
+        string $position = null,
         string $effect = null
     ) : string {
         $options = class_exists('Imagick') ? ['driver' => 'imagick'] : [];
@@ -88,7 +90,24 @@ class Controller extends AbstractController
             'heigth' => $height,
         ]);
 
-        $encoded = $img->fit($width, $height);
+        $positions = [];
+        if ($position) {
+
+            foreach (str_split($position) as $letter) {
+                if ($letter == 't') {
+                    $positions[] = 'top';
+                } else if ($letter == 'b') {
+                    $positions[] = 'bottom';
+                } else if ($letter == 'l') {
+                    $positions[] = 'left';
+                } else if ($letter == 'r') {
+                    $positions[] = 'right';
+                }
+            }
+        }
+
+        $encoded = $img->fit($width, $height, null, sizeof($positions) > 0 ? implode('-', $positions) : null);
+
 
         self::emit($timerEvent);
 
@@ -110,8 +129,8 @@ class Controller extends AbstractController
 
             foreach (explode('-', $effect) as $currentEffect) {
                 $timerEvent = new TimerEvent('image.effect', ['type' => $currentEffect]);
-                $callable = $module->getEffect($currentEffect);
-                $encoded = $callable($encoded);
+                $filter = $module->getEffect($currentEffect);
+                $encoded->filter($filter);
                 self::emit($timerEvent);
             }
         }

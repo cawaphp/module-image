@@ -16,6 +16,7 @@ namespace Cawa\ImageModule;
 use Cawa\App\HttpFactory;
 use Cawa\Router\Route;
 use Cawa\Router\RouterFactory;
+use Intervention\Image\Filters\FilterInterface;
 
 class Module extends \Cawa\App\Module
 {
@@ -38,11 +39,11 @@ class Module extends \Cawa\App\Module
     /**
      * @param string $key
      *
-     * @return callable
+     * @return FilterInterface
      */
-    public function getEffect(string $key) : callable
+    public function getEffect(string $key) : FilterInterface
     {
-        return $this->effect[$key];
+        return $this->effect[$key]();
     }
 
     /**
@@ -52,7 +53,7 @@ class Module extends \Cawa\App\Module
     {
         $effect = null;
         if ($this->effect) {
-            $effect = '{{O:e<effect>' .
+            $effect = '{{O:e_<effect>' .
                 '(' . implode('|', array_keys($this->effect)) . ')' .
                 '(?:-(' . implode('|', array_keys($this->effect)) . '))*' .
                 '}}';
@@ -62,8 +63,9 @@ class Module extends \Cawa\App\Module
             (new Route())
                 ->setName('imageResize')
                 ->setMatch('{{C:<file>.*}}\.' .
-                    '{{O:w<width>[0-9]+}}' .
-                    '{{O:h<height>[0-9]+}}' .
+                    '{{O:w_<width>[0-9]+}}' .
+                    '{{O:h_<height>[0-9]+}}' .
+                    '{{O:p_<position>(t|b)?(l|r)?}}' .
                     $effect .
                     '{{O:\.<extensionFrom>(jpg|jpeg|png|gif|tif|tiff|ico|bmp|svg)}}' .
                     '\.{{C:<extension>(jpg|jpeg|png|gif|tif|tiff|ico|bmp|svg)}}')
