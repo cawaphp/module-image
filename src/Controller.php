@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-declare (strict_types=1);
+declare (strict_types = 1);
 
 namespace Cawa\ImageModule;
 
@@ -92,22 +92,20 @@ class Controller extends AbstractController
 
         $positions = [];
         if ($position) {
-
             foreach (str_split($position) as $letter) {
                 if ($letter == 't') {
                     $positions[] = 'top';
-                } else if ($letter == 'b') {
+                } elseif ($letter == 'b') {
                     $positions[] = 'bottom';
-                } else if ($letter == 'l') {
+                } elseif ($letter == 'l') {
                     $positions[] = 'left';
-                } else if ($letter == 'r') {
+                } elseif ($letter == 'r') {
                     $positions[] = 'right';
                 }
             }
         }
 
         $encoded = $img->fit($width, $height, null, sizeof($positions) > 0 ? implode('-', $positions) : null);
-
 
         self::emit($timerEvent);
 

@@ -18,6 +18,7 @@
     "require": {
         "php": "~7.0",
         "cawaphp/cawa" : "dev-master",
+        "cawaphp/renderer": "dev-master",
 
         "intervention/image": "~2.3"
     }
