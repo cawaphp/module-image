@@ -22,20 +22,14 @@ trait ImageTrait
 {
     /**
      * @param string $path
-     * @param int $width
-     * @param int $height
-     * @param array $position
-     * @param string[] $effect
+     * @param string $effects
      * @param string $extensionTo
      *
      * @return string
      */
     public function image(
         string $path,
-        int $width = null,
-        int $height = null,
-        array $position = null,
-        array $effect = null,
+        string $effects = null,
         string $extensionTo = null
     ) : string {
         list($path) = $this->getAssetData($path);
@@ -43,24 +37,8 @@ trait ImageTrait
         $infos = pathinfo($path);
         $finalPath = $infos['dirname'] . '/' . $infos['filename'];
 
-        if ($width || $height || $effect) {
-            $finalPath .= '.';
-
-            if ($width) {
-                $finalPath .= 'w_' . $width;
-            }
-
-            if ($height) {
-                $finalPath .= 'h_' . $height;
-            }
-
-            if ($position) {
-                $finalPath .= 'p_' . implode('', $position);
-            }
-
-            if ($effect) {
-                $finalPath .= 'e_' . implode('-', $effect);
-            }
+        if (sizeof($effects)) {
+            $finalPath .= '.imm:' . $effects;
         }
 
         $finalPath .= '.' . $infos['extension'];

@@ -13,32 +13,17 @@ declare (strict_types = 1);
 
 namespace Cawa\ImageModule\Filters;
 
+use Intervention\Image\Constraint;
 use Intervention\Image\Filters\FilterInterface;
 use Intervention\Image\Image;
 
-class Blur implements FilterInterface
+class Interlace implements FilterInterface
 {
-    /**
-     * @var int
-     */
-    private $blur;
-
-    /**
-     * @param int $blur
-     */
-    public function __construct(int $blur)
-    {
-        $this->blur = $blur;
-    }
-
     /**
      * {@inheritdoc}
      */
     public function applyFilter(Image $image)
     {
-        return $image
-           ->colorize(3, 3, 3)
-           ->contrast(-30)
-           ->blur($this->blur);
+        return $image->interlace();
     }
 }

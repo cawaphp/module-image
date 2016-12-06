@@ -13,22 +13,30 @@ declare (strict_types = 1);
 
 namespace Cawa\ImageModule\Filters;
 
+use Intervention\Image\Constraint;
 use Intervention\Image\Filters\FilterInterface;
 use Intervention\Image\Image;
 
-class Blur implements FilterInterface
+class Scale implements FilterInterface
 {
     /**
      * @var int
      */
-    private $blur;
+    private $width;
 
     /**
-     * @param int $blur
+     * @var int
      */
-    public function __construct(int $blur)
+    private $height;
+
+    /**
+     * @param int $width
+     * @param int $height
+     */
+    public function __construct(int $width = null, int $height = null)
     {
-        $this->blur = $blur;
+        $this->width = $width;
+        $this->height = $height;
     }
 
     /**
@@ -36,9 +44,9 @@ class Blur implements FilterInterface
      */
     public function applyFilter(Image $image)
     {
-        return $image
-           ->colorize(3, 3, 3)
-           ->contrast(-30)
-           ->blur($this->blur);
+        return $image->resize($this->width, $this->height, function (Constraint $constraint) {
+            $constraint->aspectRatio();
+            // $constraint->upsize();
+        });
     }
 }

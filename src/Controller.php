@@ -19,6 +19,7 @@ use Cawa\Controller\AbstractController;
 use Cawa\Core\DI;
 use Cawa\Events\DispatcherFactory;
 use Cawa\Events\TimerEvent;
+use Intervention\Image\Constraint;
 use Intervention\Image\ImageManager;
 
 class Controller extends AbstractController
@@ -27,25 +28,66 @@ class Controller extends AbstractController
     use DispatcherFactory;
 
     /**
+     * @param string $filters
+     *
+     * @return array
+     */
+    private function parseFilters(string $filters) : array
+    {
+        $filters = explode(':', $filters);
+        array_shift($filters);
+
+        // global configuration filters
+        $configurations = DI::config()->getIfExists('image/effects');
+        if (is_array($configurations)) {
+            $filters = array_merge($filters, $configurations);
+        }
+
+        $return = [];
+        foreach ($filters as $filter) {
+
+            $type = null;
+            $args = [];
+
+            if (stripos($filter, '[') !== false) {
+                $type = substr($filter, 0, stripos($filter, '['));
+                $args = explode(',', substr($filter, stripos($filter, '[') + 1, -1));
+            } else {
+                $type = $filter;
+            }
+
+            foreach ($args as &$arg) {
+                if (is_numeric($arg) && (int) $arg == $arg) {
+                    $arg = (int)$arg;
+                }
+
+                if ($arg === '') {
+                    $arg = null;
+                }
+            }
+
+            $return[] = [$type, $args];
+        }
+
+        return $return;
+    }
+
+    /**
      * @param string $file
      * @param string $extension
+     * @param string $filters
      * @param string $extensionFrom
-     * @param int $width
-     * @param int $height
-     * @param string $position
-     * @param string $effect
-     *
      * @return string
      */
     public function resize(
         string $file,
         string $extension,
-        string $extensionFrom = null,
-        int $width = null,
-        int $height = null,
-        string $position = null,
-        string $effect = null
-    ) : string {
+        string $filters,
+        string $extensionFrom = null
+    ) : string
+    {
+        $filters = $this->parseFilters($filters);
+
         $options = class_exists('Imagick') ? ['driver' => 'imagick'] : [];
         $manager = new ImageManager($options);
 
@@ -67,73 +109,24 @@ class Controller extends AbstractController
 
         self::emit($timerEvent);
 
-        if (!$height) {
-            $height = round($width * $img->height() / $img->width());
-        }
-
-        if (!$width) {
-            $width = round($height * $img->width() / $img->height());
-        }
-
-        $timerEvent = new TimerEvent('image.resize');
-
-        $interlace = DI::config()->getIfExists('image/interlace');
-        $interlace = is_null($interlace) ? true : $interlace;
-
-        $sharpen = DI::config()->getIfExists('image/sharpen');
-        $sharpen = is_null($sharpen) ? 5 : $sharpen;
-
         $quality = DI::config()->getIfExists('image/quality');
 
-        $timerEvent->addData([
-            'width' => $width,
-            'heigth' => $height,
-        ]);
+        foreach ($filters as $currentEffect) {
+            list($type, $args) = $currentEffect;
 
-        $positions = [];
-        if ($position) {
-            foreach (str_split($position) as $letter) {
-                if ($letter == 't') {
-                    $positions[] = 'top';
-                } elseif ($letter == 'b') {
-                    $positions[] = 'bottom';
-                } elseif ($letter == 'l') {
-                    $positions[] = 'left';
-                } elseif ($letter == 'r') {
-                    $positions[] = 'right';
-                }
-            }
-        }
+            $timerEvent = new TimerEvent('image.effect', [
+                'type' => $type,
+                'args' => $args,
+            ]);
 
-        $encoded = $img->fit($width, $height, null, sizeof($positions) > 0 ? implode('-', $positions) : null);
+            $class = 'Cawa\\ImageModule\\Filters\\' . ucfirst($type);
+            $effect = new $class(...$args);
 
-        self::emit($timerEvent);
-
-        if ($interlace) {
-            $timerEvent = new TimerEvent('image.effect', ['type' => 'interlace']);
-            $encoded->interlace();
+            $img->filter($effect);
             self::emit($timerEvent);
         }
 
-        if ($sharpen) {
-            $timerEvent = new TimerEvent('image.effect', ['type' => 'sharpen']);
-            $encoded->sharpen($sharpen);
-            self::emit($timerEvent);
-        }
-
-        if ($effect) {
-            /* @var \Cawa\ImageModule\Module $module */
-            $module = AbstractApp::instance()->getModule('Cawa\\ImageModule\\Module');
-
-            foreach (explode('-', $effect) as $currentEffect) {
-                $timerEvent = new TimerEvent('image.effect', ['type' => $currentEffect]);
-                $filter = $module->getEffect($currentEffect);
-                $encoded->filter($filter);
-                self::emit($timerEvent);
-            }
-        }
-
-        $encoded = $encoded->encode($extension, $quality);
+        $encoded = $img->encode($extension, $quality);
 
         self::response()->addHeader('Content-Type', $encoded->mime());
         self::response()->addHeader('Content-Length', (string) strlen($encoded->getEncoded()));
