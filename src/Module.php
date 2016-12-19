@@ -34,7 +34,7 @@ class Module extends \Cawa\App\Module
                 ->setMatch(
                     '{{C:<file>.*}}' .
                     '\.imm' .
-                    '{{O:<filters>(?:\:[a-zA-Z]+(?:\[[a-z0-9-,]*\])?)+}}' .
+                    '{{O:<filters>(?:\:[a-zA-Z]+(?:\[[a-z0-9-,\.]*\])?)+}}' .
                     '{{O:\.<extensionFrom>(jpg|jpeg|png|gif|tif|tiff|ico|bmp|svg|dat)}}' .
                     '\.{{C:<extension>(jpg|jpeg|png|gif|tif|tiff|ico|bmp|svg|dat)}}'
                 )

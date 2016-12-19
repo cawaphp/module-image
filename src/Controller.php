@@ -59,6 +59,8 @@ class Controller extends AbstractController
             foreach ($args as &$arg) {
                 if (is_numeric($arg) && (int) $arg == $arg) {
                     $arg = (int)$arg;
+                } elseif (is_numeric($arg)) {
+                    $arg = (float)$arg;
                 }
 
                 if ($arg === '') {
