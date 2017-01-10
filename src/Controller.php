@@ -13,13 +13,12 @@ declare (strict_types = 1);
 
 namespace Cawa\ImageModule;
 
-use Cawa\App\AbstractApp;
 use Cawa\App\HttpFactory;
 use Cawa\Controller\AbstractController;
 use Cawa\Core\DI;
 use Cawa\Events\DispatcherFactory;
 use Cawa\Events\TimerEvent;
-use Intervention\Image\Constraint;
+use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
 
 class Controller extends AbstractController
@@ -32,8 +31,12 @@ class Controller extends AbstractController
      *
      * @return array
      */
-    private function parseFilters(string $filters) : array
+    private function parseFilters(string $filters = null) : array
     {
+        if (is_null($filters)) {
+            return [];
+        }
+
         $filters = explode(':', $filters);
         array_shift($filters);
 
@@ -75,6 +78,24 @@ class Controller extends AbstractController
     }
 
     /**
+     * @var ImageManager
+     */
+    private $manager;
+
+    /**
+     * @return ImageManager
+     */
+    private function getManager() : ImageManager
+    {
+        if (!$this->manager) {
+            $options = class_exists('Imagick') ? ['driver' => 'imagick'] : [];
+            $this->manager = new ImageManager($options);
+        }
+
+        return $this->manager;
+    }
+
+    /**
      * @param string $file
      * @param string $extension
      * @param string $filters
@@ -88,21 +109,45 @@ class Controller extends AbstractController
         string $extensionFrom = null
     ) : string
     {
-        $filters = $this->parseFilters($filters);
-
-        $options = class_exists('Imagick') ? ['driver' => 'imagick'] : [];
-        $manager = new ImageManager($options);
-
         $path = $_SERVER['DOCUMENT_ROOT'] . $file . '.' . ($extensionFrom ? $extensionFrom: $extension);
         $timerEvent = new TimerEvent('image.make', ['path' => $path]);
 
         if (!file_exists($path)) {
             self::response()->setStatus(404);
-            $img = $manager->make(dirname(__DIR__) . '/assets/404.png');
+            $img = $this->getManager()->make(dirname(__DIR__) . '/assets/404.png');
         } else {
-            $img = $manager->make($path);
+            $img = $this->getManager()->make($path);
         }
 
+        return $this->handleResize($img, $timerEvent, $filters, $extension);
+    }
+
+    /**
+     * @param string $stream
+     * @param string $extension
+     * @param string $filters
+     *
+     * @return string
+     */
+    public function resizeFromStream(string $stream, string $extension, string $filters = null) : string
+    {
+        $timerEvent = new TimerEvent('image.make', ['stream' => true]);
+
+        $img = $this->getManager()->make($stream);
+
+        return $this->handleResize($img, $timerEvent, $filters, $extension);
+    }
+
+    /**
+     * @param Image $img
+     * @param TimerEvent $timerEvent
+     * @param string $filters
+     * @param string $extension
+     *
+     * @return string
+     */
+    private function handleResize(Image $img, TimerEvent $timerEvent, string $filters = null, string $extension) : string
+    {
         $timerEvent->addData([
             'width' => $img->width(),
             'heigth' => $img->height(),
@@ -113,6 +158,7 @@ class Controller extends AbstractController
 
         $quality = DI::config()->getIfExists('image/quality');
 
+        $filters = $this->parseFilters($filters);
         foreach ($filters as $currentEffect) {
             list($type, $args) = $currentEffect;
 
