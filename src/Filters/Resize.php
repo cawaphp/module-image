@@ -13,7 +13,6 @@ declare (strict_types = 1);
 
 namespace Cawa\ImageModule\Filters;
 
-use Intervention\Image\Constraint;
 use Intervention\Image\Filters\FilterInterface;
 use Intervention\Image\Image;
 

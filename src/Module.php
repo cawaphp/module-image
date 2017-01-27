@@ -16,7 +16,6 @@ namespace Cawa\ImageModule;
 use Cawa\App\HttpFactory;
 use Cawa\Router\Route;
 use Cawa\Router\RouterFactory;
-use Intervention\Image\Filters\FilterInterface;
 
 class Module extends \Cawa\App\Module
 {

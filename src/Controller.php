@@ -48,7 +48,6 @@ class Controller extends AbstractController
 
         $return = [];
         foreach ($filters as $filter) {
-
             $type = null;
             $args = [];
 
@@ -61,9 +60,9 @@ class Controller extends AbstractController
 
             foreach ($args as &$arg) {
                 if (is_numeric($arg) && (int) $arg == $arg) {
-                    $arg = (int)$arg;
+                    $arg = (int) $arg;
                 } elseif (is_numeric($arg)) {
-                    $arg = (float)$arg;
+                    $arg = (float) $arg;
                 }
 
                 if ($arg === '') {
@@ -100,6 +99,7 @@ class Controller extends AbstractController
      * @param string $extension
      * @param string $filters
      * @param string $extensionFrom
+     *
      * @return string
      */
     public function resize(
@@ -107,8 +107,7 @@ class Controller extends AbstractController
         string $extension,
         string $filters,
         string $extensionFrom = null
-    ) : string
-    {
+    ) : string {
         $path = $_SERVER['DOCUMENT_ROOT'] . $file . '.' . ($extensionFrom ? $extensionFrom: $extension);
         $timerEvent = new TimerEvent('image.make', ['path' => $path]);
 
