@@ -16,6 +16,7 @@ namespace Cawa\ImageModule;
 use Cawa\App\HttpFactory;
 use Cawa\Controller\AbstractController;
 use Cawa\Core\DI;
+use Cawa\Date\DateTime;
 use Cawa\Events\DispatcherFactory;
 use Cawa\Events\TimerEvent;
 use Intervention\Image\Image;
@@ -178,6 +179,24 @@ class Controller extends AbstractController
         self::response()->addHeader('Content-Type', $encoded->mime());
         self::response()->addHeader('Content-Length', (string) strlen($encoded->getEncoded()));
 
+        $this->addExpires();
+
         return $encoded->getEncoded();
     }
+
+    /**
+     *
+     */
+    private function addExpires()
+    {
+        if ($interval = DI::config()->getIfExists('image/expires')) {
+            $date = (new DateTime());
+            $expiration = $date->add(new \DateInterval($interval));
+
+            self::response()->addHeader('expires', $expiration->format('D, d M Y H:i:s') . ' GMT');
+            self::response()->addHeader('pragma', 'public');
+            self::response()->addHeader('cache-control', 'max-age=' . ($expiration->getTimestamp() - $date->getTimestamp()) . ', public');
+        }
+    }
+
 }
