@@ -13,6 +13,7 @@ declare (strict_types = 1);
 
 namespace Cawa\ImageModule;
 
+use Cawa\Net\Uri;
 use Cawa\Renderer\AssetTrait;
 
 /**
@@ -25,16 +26,16 @@ trait ImageTrait
      * @param string $effects
      * @param string $extensionTo
      *
-     * @return string
+     * @return Uri
      */
     public function image(
         string $path,
         string $effects = null,
         string $extensionTo = null
-    ) : string {
+    ) : Uri {
         list($path) = $this->getAssetData($path);
 
-        $infos = pathinfo($path);
+        $infos = pathinfo($path->getPath());
         $finalPath = $infos['dirname'] . '/' . $infos['filename'];
 
         if (sizeof($effects)) {
@@ -47,6 +48,6 @@ trait ImageTrait
             $finalPath .= '.' . $extensionTo;
         }
 
-        return $finalPath;
+        return $path->setPath($finalPath);
     }
 }

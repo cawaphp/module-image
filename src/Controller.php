@@ -198,5 +198,4 @@ class Controller extends AbstractController
             self::response()->addHeader('cache-control', 'max-age=' . ($expiration->getTimestamp() - $date->getTimestamp()) . ', public');
         }
     }
-
 }
