@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-declare (strict_types = 1);
+declare(strict_types = 1);
 
 namespace Cawa\ImageModule;
 
@@ -109,7 +109,7 @@ class Controller extends AbstractController
         string $filters,
         string $extensionFrom = null
     ) : string {
-        $path = $_SERVER['DOCUMENT_ROOT'] . $file . '.' . ($extensionFrom ? $extensionFrom: $extension);
+        $path = $_SERVER['DOCUMENT_ROOT'] . $file . '.' . ($extensionFrom ? $extensionFrom : $extension);
         $timerEvent = new TimerEvent('image.make', ['path' => $path]);
 
         if (!file_exists($path)) {
@@ -189,7 +189,7 @@ class Controller extends AbstractController
      */
     private function addExpires()
     {
-        if ($interval = DI::config()->getIfExists('image/expires')) {
+        if (self::response()->getStatus() !== 404 && $interval = DI::config()->getIfExists('image/expires')) {
             $date = (new DateTime());
             $expiration = $date->add(new \DateInterval($interval));
 
