@@ -13,6 +13,7 @@ declare(strict_types = 1);
 
 namespace Cawa\ImageModule;
 
+use Cawa\App\AbstractApp;
 use Cawa\App\HttpFactory;
 use Cawa\Controller\AbstractController;
 use Cawa\Core\DI;
@@ -157,6 +158,8 @@ class Controller extends AbstractController
         self::emit($timerEvent);
 
         $quality = DI::config()->getIfExists('image/quality');
+        /** @var Module $module */
+        $module = AbstractApp::instance()->getModule('Cawa\\ImageModule\\Module');
 
         $filters = $this->parseFilters($filters);
         foreach ($filters as $currentEffect) {
@@ -167,10 +170,9 @@ class Controller extends AbstractController
                 'args' => $args,
             ]);
 
-            $class = 'Cawa\\ImageModule\\Filters\\' . ucfirst($type);
-            $effect = new $class(...$args);
+            $filter = $module->getFilter($type, $args);
+            $img = $img->filter($filter);
 
-            $img->filter($effect);
             self::emit($timerEvent);
         }
 
