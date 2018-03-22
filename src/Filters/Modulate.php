@@ -50,7 +50,8 @@ class Modulate implements FilterInterface
      */
     public function applyFilter(Image $image)
     {
-        return $image
-           ->getCore()->modulateImage($this->brightness, $this->saturation, $this->hue);
+        $image->getCore()->modulateImage($this->brightness, $this->saturation, $this->hue);
+
+        return $image;
     }
 }
